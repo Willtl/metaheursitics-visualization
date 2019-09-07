@@ -1,14 +1,13 @@
-# Visualization with p5.js of single-solution based metaheuristics behavior
- Visualizing behaviour of single-solution based metaheuristics using p5.js
+# Single-solution based metaheuristics visualization with p5.js
 
- ## Tabu Search
+ ### Tabu Search
  ![](gif/ts.gif)
  
- ## Simulated Annealing
+ ### Simulated Annealing
  ![](gif/sa.gif)
 
- ## Simulated Annealing
+ ### Simulated Annealing
  ![](gif/ils.gif)
  
- ## Random Restart Hill Climbing
+ ### Random Restart Hill Climbing
  ![](gif/sa.gif)
