@@ -1,9 +1,12 @@
 // Canvas setup
-var cols = 225;
-var rows = 225;
+var cols = 175;
+var rows = 175;
 var rectWidth;
 var rectHeight;
 var optionsLoaded = false;
+
+// Default function name
+var objective = ackleysFunction;
 
 // Objective value of each position in the grid
 var colors;
@@ -22,15 +25,19 @@ var globalBestValue;
 var temperature;
 
 // Tabu Search
-var tabuSize = 500;
+var tabuSize = 1000;
 var tabuList;
+var avoidCycles = false;
 
 // Optimization method being called in the drawing
-var drawingMethod = "SA";
+var drawingMethod = "RRHC";
+
+// UI
+var sel;
 
 function setup() {
 	addOptions();
-	createCanvas(0.9 * windowHeight, 0.9 * windowHeight);
+	createCanvas(0.75 * windowHeight, 0.75 * windowHeight);
 	rectWidth = width / cols;
 	rectHeight = height / cols;
 
@@ -42,7 +49,7 @@ function setup() {
 		for (var j = 0; j < cols; j++) {
 			var x = i * rectWidth;
 			var y = j * rectHeight;
-			colors[i][j] = ackleysFunction(x, y);
+			colors[i][j] = objective(x, y);
 			if (lowestColor == -1 || colors[i][j] < lowestColor) {
 				lowestColor = colors[i][j];
 			}
@@ -81,42 +88,87 @@ function setup() {
 	currentValue = colors[currentPosition[0]][currentPosition[1]];
 	globalBestValue = currentValue;
 	iteration = 0;
-	temperature = 50;
+	temperature = 25;
 }
 
 function addOptions() {
 	if (!optionsLoaded) {
-		var rrhcButton = createButton("RR Hill Climbing");
-		var saButton = createButton("Simulated Annealing");
-		var ilssButton = createButton("Iterated Local Search");
-		var tsButton = createButton("Tabu Search");
-
-		rrhcButton.style("margin", "10px");
-		saButton.style("margin", "10px");
-		ilssButton.style("margin", "10px");
-		tsButton.style("margin", "10px");
-
-		rrhcButton.mousePressed(function () {
-			drawingMethod = "RRHC";
-			setup();
-		});
-		saButton.mousePressed(function () {
-			drawingMethod = "SA";
-			setup();
-		});
-		ilssButton.mousePressed(function () {
-			drawingMethod = "ILS";
-			setup();
-		});
-		tsButton.mousePressed(function () {
-			drawingMethod = "TS";
-			setup();
-		});
+		createButtons();
+		createSelectMenu();
 		optionsLoaded = true;
 	}
 }
 
+function createSelectMenu() {
+	sel = createSelect();
+	sel.style("margin", "10px");
+
+	sel.option('Booth Function');
+	sel.option('Sphere Function');
+	sel.option('Bunkin Function');
+	sel.option('Ackleys Function');
+	sel.option('Cross-In-Tray Function');
+	sel.changed(changeFunction);
+}
+
+function changeFunction() {
+	var item = sel.value();
+	switch (item) {
+		case "Booth Function":
+			objective = boothFunction;
+			setup();
+			break;
+		case "Sphere Function":
+			objective = sphereFunction;
+			setup();
+			break;
+		case "Bunkin Function":
+			objective = bunkinFunction;
+			setup();
+			break;
+		case "Ackleys Function":
+			objective = ackleysFunction;
+			setup();
+			break;
+		case "Cross-In-Tray Function":
+			objective = crossInTrayFunction;
+			setup();
+			break;
+	}
+}
+
+function createButtons() {
+	var rrhcButton = createButton("RR Hill Climbing");
+	var saButton = createButton("Simulated Annealing");
+	var ilssButton = createButton("Iterated Local Search");
+	var tsButton = createButton("Tabu Search");
+
+	rrhcButton.style("margin", "10px");
+	saButton.style("margin", "10px");
+	ilssButton.style("margin", "10px");
+	tsButton.style("margin", "10px");
+
+	rrhcButton.mousePressed(function () {
+		drawingMethod = "RRHC";
+		setup();
+	});
+	saButton.mousePressed(function () {
+		drawingMethod = "SA";
+		setup();
+	});
+	ilssButton.mousePressed(function () {
+		drawingMethod = "ILS";
+		setup();
+	});
+	tsButton.mousePressed(function () {
+		drawingMethod = "TS";
+		initializeTabu()
+		setup();
+	});
+}
+
 function draw() {
+	// console.log("iteration: " + iteration + " best: " + globalBestValue);
 	if (drawingMethod == "RRHC") {
 		randomRestaringHillClimbing();
 	} else if (drawingMethod == "SA") {
@@ -148,6 +200,30 @@ function ackleysFunction(_x, _y) {
 	var x = map(_x, 0, width, -5, 5);
 	var y = map(_y, 0, height, -5, 5);
 	return -20 * exp(-0.2 * sqrt(0.5 * (pow(x, 2) + pow(y, 2)))) - exp(0.5 * (cos(2 * PI * x) + cos(2 * PI * y))) + exp(1) + 20;
+}
+
+function sphereFunction(_x, _y) {
+	var x = map(_x, 0, width, -width / 2, width / 2);
+	var y = map(_y, 0, height, -height / 2, height / 2);
+
+	return pow(x, 2) + pow(y, 2);
+}
+
+
+function bunkinFunction(_x, _y) {
+	var x = map(_x, 0, width, -15, -5);
+	var y = map(_y, 0, height, -3, 3);
+
+	return 100 * sqrt(abs(y - (0.01 * pow(x, 2)))) + 0.01 * abs(x + 10);
+}
+
+function crossInTrayFunction(_x, _y) {
+	var x = map(_x, 0, width, -10, 10);
+	var y = map(_y, 0, height, -10, 10);
+
+	var absolute1 = abs(100 - (sqrt(pow(x, 2) + pow(y, 2)) / PI));
+	var absolute2 = abs(sin(x) * sin(y) * exp(absolute1)) + 1;
+	return -0.0001 * absolute2;
 }
 
 function getRandomPosition() {
@@ -260,7 +336,7 @@ function simulatedAnnealing() {
 	fill(0, 255, 0);
 	rect(x, y, rectWidth, rectHeight);
 
-	if (random(1) < 0.01)
+	if (random(1) < 0.01 && temperature > 0)
 		temperature--;
 	console.log(temperature);
 }
@@ -314,7 +390,7 @@ function initializeTabu() {
 
 function tabuSearch() {
 	if (tabuList == null)
-		initializeTabu()
+		initializeTabu();
 
 	newPosition = getBestTabuMove();
 	if (newPosition == null) {
@@ -339,7 +415,10 @@ function tabuSearch() {
 		rect(x, y, rectWidth, rectHeight);
 		colorStatus[currentPosition[0]][currentPosition[1]] = 0;
 	}
-	tabuList[newPosition[0]][newPosition[1]] += tabuSize;
+	if (tabuList[newPosition[0]][newPosition[1]] < iteration)
+		tabuList[newPosition[0]][newPosition[1]] = iteration + tabuSize;
+	else
+		tabuList[newPosition[0]][newPosition[1]] += tabuSize;
 }
 
 function getBestTabuMove() {
@@ -361,7 +440,7 @@ function getBestTabuMove() {
 	// Randomly pick between the best two non-tabu moves to avoid cycles and increase exploration
 	if (nonTabuMoves.length > 1) {
 		var rand = random(1);
-		if (rand < 0.5)
+		if (rand < 0.5 || !avoidCycles)
 			return nonTabuMoves[0];
 		else
 			return nonTabuMoves[1];
@@ -400,8 +479,6 @@ function getBestTabuMove() {
 					return southPosition;
 			}
 		}
-		// var rand = floor(random(0, neighbors.length));
-		// return neighbors[rand];
 	}
 }
 
