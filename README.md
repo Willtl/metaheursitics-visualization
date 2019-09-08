@@ -6,7 +6,7 @@
  ### Simulated Annealing
  ![](gif/sa.gif)
 
- ### Simulated Annealing
+ ### Iterated Local Search
  ![](gif/ils.gif)
  
  ### Random Restart Hill Climbing
