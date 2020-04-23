@@ -4,7 +4,7 @@ var rows = 175;
 var rectWidth;
 var rectHeight;
 var optionsLoaded = false;
-
+canvas_size = 1000;
 // Default function name
 var objective = ackleysFunction;
 
@@ -20,6 +20,7 @@ var currentPosition;
 var previousPosition;
 var currentValue;
 var globalBestValue;
+var bestLocalOptimum;
 
 // Simulated Annealing
 var temperature;
@@ -37,7 +38,7 @@ var sel;
 
 function setup() {
 	addOptions();
-	createCanvas(0.75 * windowHeight, 0.75 * windowHeight);
+	createCanvas(0.75 * canvas_size, 0.75 * canvas_size);
 	rectWidth = width / cols;
 	rectHeight = height / cols;
 
@@ -84,9 +85,11 @@ function setup() {
 	}
 
 	currentPosition = getRandomPosition();
+	currentPosition = [40, 40];
 	previousPosition = currentPosition;
 	currentValue = colors[currentPosition[0]][currentPosition[1]];
 	globalBestValue = currentValue;
+	bestLocalOptimum = currentPosition;
 	iteration = 0;
 	temperature = 25;
 }
@@ -162,7 +165,8 @@ function createButtons() {
 	});
 	tsButton.mousePressed(function () {
 		drawingMethod = "TS";
-		initializeTabu()
+		initializeTabu();
+		loop();
 		setup();
 	});
 }
@@ -345,6 +349,7 @@ function iteratedLocalSearch() {
 	// Draw new position
 	var newPosition = getBestNeighbor();
 	var newPositionValue = colors[newPosition[0]][newPosition[1]];
+
 	if (newPositionValue < currentValue) {
 		currentPosition = newPosition;
 		currentValue = newPositionValue;
@@ -354,12 +359,13 @@ function iteratedLocalSearch() {
 		var y = currentPosition[1] * rectWidth;
 		fill(colors[currentPosition[0]][currentPosition[1]]);
 		rect(x, y, rectWidth, rectHeight);
-		currentPosition = perturbate(currentPosition);
+		currentPosition = perturbate([bestLocalOptimum[0], bestLocalOptimum[1]]);
 		currentValue = colors[currentPosition[0]][currentPosition[1]];
 	}
 
-	if (currentValue < globalBestValue) {
+	if (currentValue <= globalBestValue) {
 		globalBestValue = currentValue;
+		bestLocalOptimum = [currentPosition[0], currentPosition[1]];
 		console.log(currentValue, minute() + ":" + second());
 	}
 
@@ -371,10 +377,44 @@ function iteratedLocalSearch() {
 }
 
 function perturbate(location) {
-	if (random(1) < 0.5) {
-		location[0] = int(random(cols));
+	perturbStrength = 0.2;
+	rnd = random(1);
+	if (rnd <= 0.333) {
+		pertAmount = int(perturbStrength * cols)
+		randAmount = int(random(pertAmount) - (pertAmount / 2))
+		location[0] += randAmount;
+
+		if (location[0] >= cols)
+			location[0] = cols - 1;
+		else if (location[0] <= 0)
+			location[0] = 1;
+	} else if (rnd <= 0.666) {
+		pertAmount = int(perturbStrength * rows)
+		randAmount = int(random(pertAmount) - (pertAmount / 2))
+		location[1] += randAmount;
+
+		if (location[1] >= rows)
+			location[1] = rows - 1;
+		else if (location[1] <= 0)
+			location[1] = 1;
 	} else {
-		location[1] = int(random(rows));
+		pertAmount = int(perturbStrength * cols)
+		randAmount = int(random(pertAmount) - (pertAmount / 2))
+		location[0] += randAmount;
+
+		if (location[0] >= cols)
+			location[0] = cols - 1;
+		else if (location[0] <= 0)
+			location[0] = 1;
+
+		pertAmount = int(perturbStrength * rows)
+		randAmount = int(random(pertAmount) - (pertAmount / 2))
+		location[1] += randAmount;
+
+		if (location[1] >= rows)
+			location[1] = rows - 1;
+		else if (location[1] <= 0)
+			location[1] = 1;
 	}
 	return location;
 }
