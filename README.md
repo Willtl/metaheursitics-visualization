@@ -1,13 +1,16 @@
 # Single-solution based metaheuristics visualization with p5.js
 
- ### Tabu Search and Ackleys Function
+ ### Tabu Search
  ![](gif/ts.gif)
  
- ### Simulated Annealing and Ackleys Function
+ ### Simulated Annealing
  ![](gif/sa.gif)
 
- ### Iterated Local Search and Ackleys Function
+ ### Iterated Local Search 
  ![](gif/ils.gif)
  
- ### Random Restart Hill Climbing and Ackleys Function
+ ### Random Restart Hill Climbing
  ![](gif/rrhc.gif)
+
+ ### Functions
+ ![](gif/functions.gif)
