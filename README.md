@@ -10,7 +10,7 @@
  ![](gif/ils.gif)
  
  ### Random Restart Hill Climbing
- ![](gif/rrhc.gif)
+ ![](gif/rr.gif)
 
  ### Functions
  ![](gif/functions.gif)
